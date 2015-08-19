@@ -3,7 +3,7 @@ body {
 }
 
 #imgSource {
-    visibility: hidden;
+   // visibility: hidden;
 }
 
 #sliderWrapper {
@@ -13,4 +13,8 @@ body {
     margin: 0 auto;
     padding: 0;
     background: #ffb894;
+}
+.sliderTile {
+    background: pink;
+    
 }
