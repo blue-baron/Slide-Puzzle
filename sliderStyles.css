@@ -1,0 +1,16 @@
+body {
+    background: #b28f6b;
+}
+
+#imgSource {
+    visibility: hidden;
+}
+
+#sliderWrapper {
+    width: 90%;
+    max-width: 600px;
+    border: 6px solid #000000;
+    margin: 0 auto;
+    padding: 0;
+    background: #ffb894;
+}
