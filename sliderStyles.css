@@ -6,15 +6,19 @@ body {
    // visibility: hidden;
 }
 
-#sliderWrapper {
+#puzzleWrapper {
+    position: relative;
     width: 90%;
     max-width: 600px;
     border: 6px solid #000000;
     margin: 0 auto;
     padding: 0;
     background: #ffb894;
+    z-index: 10;
 }
-.sliderTile {
-    background: pink;
-    
+.puzzleTile {
+    border: 1px solid #000000;
+    overflow: hidden;
+    position: absolute;
+    z-index: 20;
 }
