@@ -1,43 +1,50 @@
 /*jshint browser: true, devel: true*/
 
-var slidePuzzle = {
-    sourceImage: '',
+function slidePuzzle(gridSpaces, sourceImg) {
+
+    //gridSpaces available options will all be square numbers as
+    //the number of rows is determined with Math.sqrt.
+    this.gridSpaces = gridSpaces || 9;
     
-    sliderWidth: 0,
-    sliderHeight: 0,
+    this.sourceImg = sourceImg;        
+    this.grid = {};
     
-    numTiles: 9,
-    numRows: 0,
-    tileWidth: 0,
-    tileHeight: 0,
-    
-    grid: {},
-    
-    puzzleSize: function(){
+}//End slidePuzzle constructor function.
+   
+
+slidePuzzle.prototype.puzzleSize = function(){
+        //Set width of puzzle.
         var puzzleWrapper = document.getElementById('puzzleWrapper'); 
-        //get width of puzzle
         this.sliderWidth = puzzleWrapper.clientWidth;
         
-        //set puzzle img to puzzle width
-        this.sourceImage = document.getElementById('imgSource');
-        this.sourceImage.style.width = this.sliderWidth + "px";
+        //Get source img if not present.
+        if (!this.sourceImg) {
+            this.sourceImg = document.getElementById('imgSource');
+        }
         
-        //determine puzzle img height & set puzzle wrapper height
-        this.sliderHeight = this.sourceImage.clientHeight;
+        //Set puzzle img to puzzle width.
+        this.sourceImg.style.width = this.sliderWidth + "px";
+        
+        //Determine puzzle img height & set puzzle wrapper height.
+        this.sliderHeight = this.sourceImg.clientHeight;
         puzzleWrapper.style.height = this.sliderHeight + 'px';
         
-    },
+};
     
-    createTiles: function () {
-        //determine number of rows in puzzle
-        this.numRows = Math.sqrt(this.numTiles);
+slidePuzzle.prototype.createTiles = function () {
+        //Determine number of rows in puzzle.
+        this.numRows = Math.sqrt(this.gridSpaces);
         
-        //determine individual tile dimensions
+        //Determine number of puzzle tiles.
+        this.numTiles = this.gridSpaces - 1;
+        
+        //Determine individual tile dimensions.
         this.tileWidth = this.sliderWidth / this.numRows;
         this.tileHeight = this.sliderHeight / this.numRows;
         
-        //add tiles (divs) to slider
+        //Add tiles (divs) to slider.
         var puzzle = document.getElementById('puzzleWrapper');
+        
         for (var i = 0; i < this.numTiles; i++) {
             var newTile = document.createElement('div');
             newTile.id = 'tile' + i;
@@ -45,45 +52,89 @@ var slidePuzzle = {
             newTile.style.width = this.tileWidth + 'px';
             newTile.style.height = this.tileHeight + 'px';
             puzzle.appendChild(newTile);
-        }//end for
+        }//End numTiles for loop.
          
-    },
+};
     
-   gridSetup: function () {
+slidePuzzle.prototype.gridSetup = function () {
        
        //Create array of tiles because
-       //getElementsByClassName result isn't actually an array
-       var tiles = document.getElementsByClassName('puzzleTile');
-       var tilesArray = [];
-   
+       //getElementsByClassName result isn't actually an array.
+       var tiles = document.getElementsByClassName('puzzleTile'),
+           tilesArray = [],
+           yPos = 0;
+       
        for (var i = 0; i < tiles.length; i++) {
            tilesArray.push(tiles[i]);
        }
        
-       //Create grid rows and place / position tiles in each row
+       //Create grid rows and place / position tiles in each row.
        for (i = 0; i < this.numRows; i++) {
-           this.grid['row' + i] = tilesArray.splice(0, 3);
+           this.grid['row' + i] = tilesArray.splice(0, this.numRows);
           
-           var row = this.grid['row' + i];
-           var yPos = 0;
-           var xPos = 0;
+           var row = this.grid['row' + i],
+               xPos = 0; 
            
-           //add x position to tiles
-           
-           
-           //add y position to tiles
            for (var j = 0; j < row.length; j++) {
-                row[j].yPos_final = yPos;
-                row[j].style.top = yPos + 'px';
-                yPos = yPos + this.tileHeight;
-            }
-           
-        }//end grid creation for loop
-       
-   }
-    
-};//end setSlider
+               
+               //Add x position to tiles.
+               row[j].xPos_final = xPos;
+               row[j].style.left = xPos + 'px';
+               
+               //Add y position to tiles. 
+               row[j].yPos_final = yPos;
+               row[j].style.top = yPos + 'px';
+               
+               //Increment xPos here within the loop so it increments by tile.
+               xPos += this.tileWidth;
+            }//end row for loop
+            
+            //Increment yPos outside row loop so it increments by ROW not tile.
+            yPos += this.tileHeight;
 
-slidePuzzle.puzzleSize();
-slidePuzzle.createTiles();
-slidePuzzle.gridSetup();
+        }//End grid creation for loop.
+       
+   };
+
+slidePuzzle.prototype.placeImages = function() {
+        
+        var i;
+        var imgId = 0;
+        
+        //Loop through grid rows and position place img in each tile.
+        for (var prop in this.grid) {
+            
+            for (i = 0; i < this.grid[prop].length; i++) {
+                
+                var puzzleImg = document.createElement('img');
+                puzzleImg.src = 'images/Rooster-1.jpg';
+                puzzleImg.id = 'tileImg' + imgId;
+                puzzleImg.style.width = this.sliderWidth + 'px';
+                puzzleImg.style.position = 'absolute';
+                
+                this.grid[prop][i].appendChild(puzzleImg);
+
+                imgId ++;
+                
+            }//End rows for loop.
+        
+        }//End grid for in loop.
+    
+        //Get tile images and position correctly within tile
+        for (i = 0; i < this.numTiles; i++) {
+            var tileImg = document.getElementById('tileImg' + i);
+            tileImg.style.top = '-' + tileImg.parentNode.yPos_final + 'px';
+            tileImg.style.left = '-' + tileImg.parentNode.xPos_final + 'px';
+        }
+
+};
+
+
+
+//INITIALIZE PUZZLE
+var puzzle = new slidePuzzle();
+
+puzzle.puzzleSize();
+puzzle.createTiles();
+puzzle.gridSetup();
+puzzle.placeImages();

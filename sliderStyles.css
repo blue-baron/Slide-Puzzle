@@ -1,17 +1,11 @@
 body {
     background: #b28f6b;
 }
-
-#imgSource {
-   // visibility: hidden;
-}
-
 #puzzleWrapper {
     position: relative;
-    width: 90%;
-    max-width: 600px;
+    width: 400px;
     border: 6px solid #000000;
-    margin: 0 auto;
+   // margin: 0 auto;
     padding: 0;
     background: #ffb894;
     z-index: 10;
