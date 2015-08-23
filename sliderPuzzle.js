@@ -8,7 +8,7 @@ function slidePuzzle(gridSpaces, sourceImg) {
     
     this.sourceImg = sourceImg;        
     this.gridFinal = {};
-    this.gridRandom = {};
+    this.tileCoordsFinal = []; 
     
 }//End slidePuzzle constructor function.
    
@@ -18,9 +18,10 @@ slidePuzzle.prototype.puzzleSize = function(){
     var puzzleWrapper = document.getElementById('puzzleWrapper'); 
     this.sliderWidth = puzzleWrapper.clientWidth;
         
-    //Get source img if not present.
+    //Use default source img if not set.
     if (!this.sourceImg) {
-        this.sourceImg = document.getElementById('imgSource');
+        var sourceImg = document.getElementById('imgSource');
+        this.sourceImg = sourceImg;
     }
         
     //Set puzzle img to puzzle width.
@@ -28,7 +29,11 @@ slidePuzzle.prototype.puzzleSize = function(){
         
     //Determine puzzle img height & set puzzle wrapper height.
     this.sliderHeight = this.sourceImg.clientHeight;
-    puzzleWrapper.style.height = this.sliderHeight + 'px';      
+    puzzleWrapper.style.height = this.sliderHeight + 'px'; 
+    
+    //Setup small puzzle reference image.
+    this.sourceImg.style.visibility = 'visible';
+    this.sourceImg.style.width = 200 + "px";    
 };
     
 slidePuzzle.prototype.createTiles = function () {
@@ -76,6 +81,9 @@ slidePuzzle.prototype.createGrid = function (grid) {
             //Add y position to tiles. 
             row[j].yPos_final = yPos;
             row[j].style.top = yPos + 'px';
+            
+            //Add x & y coords to array of final positions
+            this.tileCoordsFinal.push({xPos: xPos, yPos: yPos});
                
             //Increment xPos here within the loop so it increments by tile.
             xPos += this.tileWidth;
@@ -117,16 +125,24 @@ slidePuzzle.prototype.placeImages = function() {
 };
 
 slidePuzzle.prototype.randomizeTiles = function () {
+    var tiles = this.tileCoordsFinal;
+    var randomCoords = [];
     
-    var tiles = nodelistToArray('puzzleTile'),
-        randomTiles = [];
-    
+    //Place tiles into randomCoords [] in a random order.
     for (var i = 0; i < this.numTiles; i++) {
         var max = tiles.length;
         var randomNum = randomInt(1, max);
-        console.log(randomNum);
+        randomCoords.push(tiles[randomNum]);
+        tiles.splice(randomNum, 1);
     }
     
+    //Postion tiles randomly in grid, order determined by randomCoords [].    
+    var newCoords = nodelistToArray('puzzleTile');
+    for (i = 0; i < newCoords.length; i++) {    
+        newCoords[i].style.left = randomCoords[i].xPos + 'px';
+        newCoords[i].style.top = randomCoords[i].yPos + 'px';          
+    }
+
 };
 
 
@@ -149,11 +165,14 @@ function randomInt(min, max) {
 
 
 //INITIALIZE PUZZLE
-var puzzle = new slidePuzzle();
+//var init = function () {
+    
+    var puzzle = new slidePuzzle();
 
-puzzle.puzzleSize();
-puzzle.createTiles();
-puzzle.createGrid('gridFinal');
-puzzle.placeImages();
-puzzle.randomizeTiles();
+    puzzle.puzzleSize();
+    puzzle.createTiles();
+    puzzle.createGrid('gridFinal');
+    puzzle.placeImages();
+    puzzle.randomizeTiles();
 
+//};
