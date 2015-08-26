@@ -7,10 +7,9 @@ function slidePuzzle(gridSpaces, sourceImg) {
     this.gridSpaces = gridSpaces || 9;
     
     this.sourceImg = sourceImg;        
-    this.gridFinal = {};
-    this.tileCoordsStart = [];
-    this.tileCoordsFinal = [];
-   
+    this.tileGrid = [];
+    this.tileCoords = [];
+    
 }//End slidePuzzle constructor function.
    
 
@@ -70,8 +69,8 @@ slidePuzzle.prototype.createGrid = function (grid) {
     var yPos = 0;
        
     for (var i = 0; i < this.numRows; i++) {
-        this[grid]['row' + i] = tilesArray.splice(0, this.numRows);
-        var row = this[grid]['row' + i],
+        this[grid][i] = tilesArray.splice(0, this.numRows);
+        var row = this[grid][i],
            xPos = 0; 
            
         for (var j = 0; j < row.length; j++) {
@@ -84,7 +83,7 @@ slidePuzzle.prototype.createGrid = function (grid) {
             row[j].style.top = yPos + 'px';
             
             //Add x & y coords to array of final positions
-            this.tileCoordsFinal.push({xPos: xPos, yPos: yPos});
+            this.tileCoords.push({xPos: xPos, yPos: yPos});
                
             //Increment xPos here within the loop so it increments by tile.
             xPos += this.tileWidth;
@@ -101,16 +100,16 @@ slidePuzzle.prototype.placeImages = function() {
     var imgId = 0;
         
     //Loop through grid rows and position place img in each tile.
-    for (var prop in this.gridFinal) {
+    for (var prop in this.tileGrid) {
             
-        for (i = 0; i < this.gridFinal[prop].length; i++) {
+        for (i = 0; i < this.tileGrid[prop].length; i++) {
             var puzzleImg = document.createElement('img');
             puzzleImg.src = 'images/Rooster-1.jpg';
             puzzleImg.id = 'tileImg' + imgId;
             puzzleImg.style.width = this.sliderWidth + 'px';
             puzzleImg.style.position = 'absolute';
                 
-            this.gridFinal[prop][i].appendChild(puzzleImg);
+            this.tileGrid[prop][i].appendChild(puzzleImg);
 
             imgId ++;
                 
@@ -126,11 +125,14 @@ slidePuzzle.prototype.placeImages = function() {
 };
 
 slidePuzzle.prototype.randomizeTiles = function () {
-    var tiles = this.tileCoordsFinal;
+    var tiles = [];
+    for (var i = 0; i < this.tileCoords.length; i++) {
+        tiles[i] = this.tileCoords[i];
+    }
     var randomCoords = [];
     
     //Place tiles into randomCoords [] in a random order.
-    for (var i = 0; i < this.numTiles; i++) {
+    for (i = 0; i < this.numTiles; i++) {
         var max = tiles.length;
         var randomNum = randomInt(1, max);
         randomCoords.push(tiles[randomNum]);
@@ -143,8 +145,9 @@ slidePuzzle.prototype.randomizeTiles = function () {
         newCoords[i].style.left = randomCoords[i].xPos + 'px';
         newCoords[i].style.top = randomCoords[i].yPos + 'px';          
     }
-
+    
 };
+
 slidePuzzle.prototype.clickEvents = function() {
     //Add click event listener to each tile
     var testTile = nodelistToArray('puzzleTile');
@@ -152,16 +155,40 @@ slidePuzzle.prototype.clickEvents = function() {
     testTile.forEach(function(item) {
         controller.animateTile(item);
     });
-
 };
+
 
 
 var controller = {
 
     gridSpaces: [],
     
-    initializeGrid: function () {
+    finalPositions: [],
+    
+    initializeGrid: function (puzzle) {
         
+        //Create Rows for occupiedSpaces
+        var rows = puzzle.numRows;
+        for (var i = 0; i < rows; i++) {
+            this.gridSpaces.push([]);
+            //Create each space within occupiedSpaces rows.
+            //Include xPos, yPos & whether space is empty.
+            for (var j = 0; j < rows; j++) {
+                if (puzzle.tileGrid[i][j]) {
+                this.gridSpaces[i].push( {
+                    empty: false,
+                    xPos: puzzle.tileGrid[i][j].xPos_final,
+                    yPos: puzzle.tileGrid[i][j].yPos_final
+                    } );
+                } else {
+                    this.gridSpaces[i].push( {
+                        empty: true,
+                        xPos: puzzle.tileWidth * (rows - 1),
+                        yPos: puzzle.tileHeight * (rows - 1)
+                    } );    
+                }
+            }//end for j
+        }//end for i
     },
     
     animateTile: function(item){
@@ -206,9 +233,11 @@ function randomInt(min, max) {
 
     puzzle.puzzleSize();
     puzzle.createTiles();
-    puzzle.createGrid('gridFinal');
+    puzzle.createGrid('tileGrid');
     puzzle.placeImages();
     puzzle.randomizeTiles();
     puzzle.clickEvents();
+
+    controller.initializeGrid(puzzle);
 
 //};
