@@ -8,8 +8,9 @@ function slidePuzzle(gridSpaces, sourceImg) {
     
     this.sourceImg = sourceImg;        
     this.gridFinal = {};
-    this.tileCoordsFinal = []; 
-    
+    this.tileCoordsStart = [];
+    this.tileCoordsFinal = [];
+   
 }//End slidePuzzle constructor function.
    
 
@@ -59,12 +60,12 @@ slidePuzzle.prototype.createTiles = function () {
         newTile.style.height = this.tileHeight + 'px';
         puzzle.appendChild(newTile);
     }//End numTiles for loop.     
-};
-    
+};			
+
 slidePuzzle.prototype.createGrid = function (grid) { 
     //Place tiles in an array.
     var tilesArray = nodelistToArray('puzzleTile');
-       
+        
     //Create grid rows and place / position tiles in each row.
     var yPos = 0;
        
@@ -144,9 +145,41 @@ slidePuzzle.prototype.randomizeTiles = function () {
     }
 
 };
+slidePuzzle.prototype.clickEvents = function() {
+    //Add click event listener to each tile
+    var testTile = nodelistToArray('puzzleTile');
+    
+    testTile.forEach(function(item) {
+        controller.animateTile(item);
+    });
+
+};
 
 
+var controller = {
 
+    gridSpaces: [],
+    
+    initializeGrid: function () {
+        
+    },
+    
+    animateTile: function(item){
+        item.addEventListener('click', function () {
+            var xPosCurrent = this.offsetTop;
+            var yPosCurrent = this.offsetLeft;
+            
+            this.style.top = (xPosCurrent + puzzle.tileHeight) + 'px';
+            
+        });     
+    },
+    
+    
+    
+};//end controller
+
+
+//HELPER FUNCTIONS
 function nodelistToArray (className) {
     var tiles = document.getElementsByClassName(className),
         tilesArray = [];
@@ -159,9 +192,11 @@ function nodelistToArray (className) {
 
 function randomInt(min, max) {
     //This little baby is from the MDN Math.random page.
-    //In order for it to be able to return 0 the min needs to be set to -1.
     return Math.floor(Math.random() * (max - min + 1)) ;
 }
+
+
+
 
 
 //INITIALIZE PUZZLE
@@ -174,5 +209,6 @@ function randomInt(min, max) {
     puzzle.createGrid('gridFinal');
     puzzle.placeImages();
     puzzle.randomizeTiles();
+    puzzle.clickEvents();
 
 //};
