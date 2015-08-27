@@ -9,6 +9,8 @@ function slidePuzzle(gridSpaces, sourceImg) {
     this.sourceImg = sourceImg;        
     this.tileGrid = [];
     this.tileCoords = [];
+    this.randomTiles = [];
+    this.boundaries = {};
     
 }//End slidePuzzle constructor function.
    
@@ -59,7 +61,15 @@ slidePuzzle.prototype.createTiles = function () {
         newTile.style.height = this.tileHeight + 'px';
         puzzle.appendChild(newTile);
     }//End numTiles for loop.     
-};			
+};
+
+slidePuzzle.prototype.puzzleBoundaries = function() {
+    //Determine puzzle boundaries. Tiles can't move past these points.
+    this.boundaries.left = 0;
+    this.boundaries.top = 0;
+    this.boundaries.right = this.sliderWidth - this.tileWidth;
+    this.boundaries.bottom = this.sliderHeight - this.tileHeight;
+};
 
 slidePuzzle.prototype.createGrid = function (grid) { 
     //Place tiles in an array.
@@ -136,6 +146,7 @@ slidePuzzle.prototype.randomizeTiles = function () {
         var max = tiles.length;
         var randomNum = randomInt(1, max);
         randomCoords.push(tiles[randomNum]);
+        this.randomTiles.push(tiles[randomNum]);
         tiles.splice(randomNum, 1);
     }
     
@@ -161,45 +172,71 @@ slidePuzzle.prototype.clickEvents = function() {
 
 var controller = {
 
-    gridSpaces: [],
-    
-    finalPositions: [],
+    grid: [],
     
     initializeGrid: function (puzzle) {
         
-        //Create Rows for occupiedSpaces
-        var rows = puzzle.numRows;
+        //Create Rows for grid
+        var rows = puzzle.numRows,
+            gridNum = 0;
         for (var i = 0; i < rows; i++) {
-            this.gridSpaces.push([]);
-            //Create each space within occupiedSpaces rows.
+            this.grid.push([]);
+            //Create each space within grid rows.
             //Include xPos, yPos & whether space is empty.
             for (var j = 0; j < rows; j++) {
                 if (puzzle.tileGrid[i][j]) {
-                this.gridSpaces[i].push( {
+                this.grid[i].push( {
                     empty: false,
                     xPos: puzzle.tileGrid[i][j].xPos_final,
-                    yPos: puzzle.tileGrid[i][j].yPos_final
+                    yPos: puzzle.tileGrid[i][j].yPos_final,
+                    gridPos: gridNum,
                     } );
+                    gridNum++;
                 } else {
-                    this.gridSpaces[i].push( {
+                    //The last space in the grid starts off empty.
+                    this.grid[i].push( {
                         empty: true,
                         xPos: puzzle.tileWidth * (rows - 1),
-                        yPos: puzzle.tileHeight * (rows - 1)
+                        yPos: puzzle.tileHeight * (rows - 1),
+                        gridPos: gridNum
                     } );    
                 }
+                //Determine current tile in each grid space using the puzzle.randomTiles array.
+                for (var k = 0; k < puzzle.randomTiles.length; k++) {
+                        if (puzzle.randomTiles[k].xPos === this.grid[i][j].xPos && puzzle.randomTiles[k].yPos === this.grid[i][j].yPos) {
+                            this.grid[i][j].currentTile = 'tile' + k;
+                        }
+                    }
             }//end for j
         }//end for i
     },
     
     animateTile: function(item){
         item.addEventListener('click', function () {
-            var xPosCurrent = this.offsetTop;
-            var yPosCurrent = this.offsetLeft;
+            //var xPos = this.offsetTop;
+            //var yPos = this.offsetLeft;
+            //this.style.top = (xPos + puzzle.tileHeight) + 'px';
             
-            this.style.top = (xPosCurrent + puzzle.tileHeight) + 'px';
+            var tileId = this.id,
+                gridPos,
+                grid = controller.grid;
             
-        });     
-    },
+            //Determine current tile position.
+            for (var i = 0; i < grid.length; i++) {
+                for (var j = 0; j < grid.length; j++) {
+                    if (grid[i][j].currentTile === tileId) {
+                        gridPos = grid[i][j].gridPos;
+                        console.log('gridPos:' + gridPos);
+                        console.log('tile:' + grid[i][j].currentTile);
+                    }//end if
+                }//end for j
+            }//end for i
+            
+            //Determine if can animate left (move along in row).
+            //if ()
+            
+        }); //end addEventListener     
+    },// end animateTile
     
     
     
@@ -233,6 +270,7 @@ function randomInt(min, max) {
 
     puzzle.puzzleSize();
     puzzle.createTiles();
+    puzzle.puzzleBoundaries();
     puzzle.createGrid('tileGrid');
     puzzle.placeImages();
     puzzle.randomizeTiles();
