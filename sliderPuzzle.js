@@ -172,7 +172,7 @@ slidePuzzle.prototype.clickEvents = function() {
 
 var controller = {
 
-    grid: [],
+    grid: {},
     
     initializeGrid: function (puzzle) {
         
@@ -180,41 +180,45 @@ var controller = {
         var rows = puzzle.numRows,
             gridNum = 0;
         for (var i = 0; i < rows; i++) {
-            this.grid.push([]);
+            //this.grid.push([]);
+            
             //Create each space within grid rows.
             //Include xPos, yPos & whether space is empty.
             for (var j = 0; j < rows; j++) {
                 if (puzzle.tileGrid[i][j]) {
-                this.grid[i].push( {
+                this.grid['pos' + gridNum] = {
                     empty: false,
                     xPos: puzzle.tileGrid[i][j].xPos_final,
                     yPos: puzzle.tileGrid[i][j].yPos_final,
                     gridPos: gridNum,
-                    } );
+                    };
                     gridNum++;
                 } else {
                     //The last space in the grid starts off empty.
-                    this.grid[i].push( {
+                    this.grid['pos' + gridNum] = {
                         empty: true,
                         xPos: puzzle.tileWidth * (rows - 1),
                         yPos: puzzle.tileHeight * (rows - 1),
                         gridPos: gridNum
-                    } );    
+                    };    
                 }
-                //Determine current tile in each grid space using the puzzle.randomTiles array.
-                for (var k = 0; k < puzzle.randomTiles.length; k++) {
-                        if (puzzle.randomTiles[k].xPos === this.grid[i][j].xPos && puzzle.randomTiles[k].yPos === this.grid[i][j].yPos) {
-                            this.grid[i][j].currentTile = 'tile' + k;
-                        }
-                    }
             }//end for j
         }//end for i
+        
+        //Determine current tile in each grid space using the puzzle.randomTiles array.
+        for (var k = 0; k < puzzle.randomTiles.length; k++) {
+            for (var prop in this.grid) {
+                if (puzzle.randomTiles[k].xPos === this.grid[prop].xPos && puzzle.randomTiles[k].yPos === this.grid[prop].yPos) {
+                    this.grid[prop].currentTile = 'tile' + k;
+                }
+            }
+        }
     },
     
     animateTile: function(item){
         item.addEventListener('click', function () {
-            //var xPos = this.offsetTop;
-            //var yPos = this.offsetLeft;
+            var xPos = this.offsetTop;
+            var yPos = this.offsetLeft;
             //this.style.top = (xPos + puzzle.tileHeight) + 'px';
             
             var tileId = this.id,
@@ -222,21 +226,51 @@ var controller = {
                 grid = controller.grid;
             
             //Determine current tile position.
-            for (var i = 0; i < grid.length; i++) {
-                for (var j = 0; j < grid.length; j++) {
-                    if (grid[i][j].currentTile === tileId) {
-                        gridPos = grid[i][j].gridPos;
-                        console.log('gridPos:' + gridPos);
-                        console.log('tile:' + grid[i][j].currentTile);
-                    }//end if
-                }//end for j
-            }//end for i
+            for (var prop in grid) {
+                if (grid[prop].currentTile === tileId) {
+                    gridPos = grid[prop].gridPos;
+                }//end if
+                }//end for in
+        
+            //Determine legal direction tile can move in and moveit, moveit!
+            var spaceLeft = gridPos - 1,
+                spaceRight = gridPos + 1,
+                spaceAbove = gridPos - puzzle.numRows,
+                spaceBelow = gridPos + puzzle.numRows;
             
-            //Determine if can animate left (move along in row).
-            //if ()
-            
+            if (grid['pos' + spaceBelow] && grid['pos' + spaceBelow].empty) {
+                this.style.top = (grid['pos' + spaceBelow].yPos) + 'px';
+                grid['pos' + spaceBelow].empty = false;
+                grid['pos' + spaceBelow].currentTile = this.id;
+                grid['pos' + gridPos].empty = true;
+                grid['pos' + gridPos].currentTile = false;
+                } 
+            else if (grid['pos' + spaceAbove] && grid['pos' + spaceAbove].empty) {
+                this.style.top = (grid['pos' + spaceAbove].yPos) + 'px';
+                grid['pos' + spaceAbove].empty = false;
+                grid['pos' + spaceAbove].currentTile = this.id; 
+                grid['pos' + gridPos].empty = true;
+                grid['pos' + gridPos].currentTile = false; 
+                }
+            else if (grid['pos' + spaceLeft] && grid['pos' + spaceLeft].empty) {
+                this.style.left = (grid['pos' + spaceLeft].xPos) + 'px';
+                grid['pos' + spaceLeft].empty = false;
+                grid['pos' + spaceLeft].currentTile = this.id;
+                grid['pos' + gridPos].empty = true;
+                grid['pos' + gridPos].currentTile = false;
+                }
+            else if (grid['pos' + spaceRight] && grid['pos' + spaceRight].empty) {
+                this.style.left = (grid['pos' + spaceRight].xPos) + 'px';
+                grid['pos' + spaceRight].empty = false;
+                grid['pos' + spaceRight].currentTile = this.id;
+                grid['pos' + gridPos].empty = true;
+                grid['pos' + gridPos].currentTile = false;
+                }
+           else {
+                console.log('Sorry, nowhere for this tile to go');
+           }            
         }); //end addEventListener     
-    },// end animateTile
+    }// end animateTile
     
     
     
