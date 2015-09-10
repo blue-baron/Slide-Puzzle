@@ -4,7 +4,7 @@ function slidePuzzle(gridSpaces, sourceImg) {
 
     //gridSpaces available options will all be square numbers as
     //the number of rows is determined with Math.sqrt.
-    this.gridSpaces = gridSpaces || 9;
+    this.gridSpaces = gridSpaces || 16;
     
     this.sourceImg = sourceImg;        
     this.tileGrid = [];
@@ -233,10 +233,12 @@ var controller = {
                 }//end for in
         
             //Determine legal direction tile can move in and moveit, moveit!
-            var spaceLeft = gridPos - 1,
+            var spaceAbove = gridPos - puzzle.numRows,
+                spaceBelow = gridPos + puzzle.numRows,
+                spaceLeft = gridPos - 1,
                 spaceRight = gridPos + 1,
-                spaceAbove = gridPos - puzzle.numRows,
-                spaceBelow = gridPos + puzzle.numRows;
+                rightEdge = 0,
+                leftEdge = puzzle.numRows - 1;
             
             if (grid['pos' + spaceBelow] && grid['pos' + spaceBelow].empty) {
                 this.style.top = (grid['pos' + spaceBelow].yPos) + 'px';
@@ -253,18 +255,24 @@ var controller = {
                 grid['pos' + gridPos].currentTile = false; 
                 }
             else if (grid['pos' + spaceLeft] && grid['pos' + spaceLeft].empty) {
-                this.style.left = (grid['pos' + spaceLeft].xPos) + 'px';
-                grid['pos' + spaceLeft].empty = false;
-                grid['pos' + spaceLeft].currentTile = this.id;
-                grid['pos' + gridPos].empty = true;
-                grid['pos' + gridPos].currentTile = false;
+                if (grid['pos' + spaceLeft].gridPos % puzzle.numRows !== leftEdge) {
+                    // % !== leftEdge ensures tile won't got past left edge of the row.  
+                    this.style.left = (grid['pos' + spaceLeft].xPos) + 'px';
+                    grid['pos' + spaceLeft].empty = false;
+                    grid['pos' + spaceLeft].currentTile = this.id;
+                    grid['pos' + gridPos].empty = true;
+                    grid['pos' + gridPos].currentTile = false;
                 }
+            }
             else if (grid['pos' + spaceRight] && grid['pos' + spaceRight].empty) {
-                this.style.left = (grid['pos' + spaceRight].xPos) + 'px';
-                grid['pos' + spaceRight].empty = false;
-                grid['pos' + spaceRight].currentTile = this.id;
-                grid['pos' + gridPos].empty = true;
-                grid['pos' + gridPos].currentTile = false;
+                if (grid['pos' + spaceRight].gridPos % puzzle.numRows !== rightEdge) {
+                    // % !== rightEdge ensures tile won't got past right edge of the row.    
+                    this.style.left = (grid['pos' + spaceRight].xPos) + 'px';
+                    grid['pos' + spaceRight].empty = false;
+                    grid['pos' + spaceRight].currentTile = this.id;
+                    grid['pos' + gridPos].empty = true;
+                    grid['pos' + gridPos].currentTile = false;
+                    }
                 }
            else {
                 console.log('Sorry, nowhere for this tile to go');
